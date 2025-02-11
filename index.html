@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>随机摇号器</title>
+    <style>
+      body {
+        font-family: "Microsoft YaHei", Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        text-align: center;
+        background-color: #f5f6fa;
+        color: #2c3e50;
+      }
+      .container {
+        background-color: white;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        margin-top: 50px;
+        max-width: 800px;
+        width: 90%;
+        margin-left: auto;
+        margin-right: auto;
+        position: relative;
+      }
+      h1 {
+        color: #2c3e50;
+        margin-bottom: 30px;
+        font-size: 32px;
+      }
+      #result {
+        font-size: 36px;
+        margin: 30px 0;
+        color: #e74c3c;
+        padding: 20px;
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        font-weight: bold;
+        line-height: 1.5;
+        box-sizing: border-box;
+        width: 100%;
+        display: block;
+      }
+      #result .number {
+        display: inline-block;
+        border: 2px dashed #e74c3c;
+        padding: 5px 10px;
+        margin: 5px;
+        min-width: 50px;
+        border-radius: 8px;
+      }
+      button {
+        padding: 12px 30px;
+        font-size: 18px;
+        background-color: #3498db;
+        color: white;
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: bold;
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+      }
+      button:hover {
+        background-color: #2980b9;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+      }
+      .input-group {
+        margin: 25px 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
+      input {
+        padding: 8px 12px;
+        font-size: 16px;
+        width: 100px;
+        border: 2px solid #dcdde1;
+        border-radius: 8px;
+        outline: none;
+        transition: border-color 0.3s ease;
+      }
+      input:focus {
+        border-color: #3498db;
+      }
+      label {
+        font-size: 16px;
+        color: #34495e;
+      }
+      .probability-panel {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+        max-height: 80vh;
+        overflow-y: auto;
+      }
+
+      .probability-content {
+        margin-top: 20px;
+      }
+
+      .probability-row {
+        margin: 10px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .probability-inputs {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 10px;
+        margin-top: 15px;
+      }
+
+      .probability-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        opacity: 0.5; /* 未选中时半透明 */
+        transition: opacity 0.3s;
+      }
+
+      .probability-item.active {
+        opacity: 1; /* 选中时完全不透明 */
+      }
+
+      .probability-item input {
+        width: 60px;
+      }
+
+      .probability-item input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+      }
+
+      .probability-row button {
+        padding: 5px 15px;
+        margin: 0 5px;
+        font-size: 14px;
+      }
+
+      /* 修改按钮组样式 */
+      .button-group {
+        display: flex;
+        justify-content: center;
+        margin: 20px 0;
+      }
+
+      /* 添加设置按钮样式 */
+      .settings-btn {
+        background-color: #2ecc71;
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        padding: 8px 15px;
+        font-size: 14px;
+      }
+
+      /* 调整容器样式 */
+      .container {
+        background-color: white;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        margin-top: 50px;
+        max-width: 800px;
+        width: 90%;
+        margin-left: auto;
+        margin-right: auto;
+        position: relative; /* 添加相对定位 */
+      }
+
+      @media (max-width: 768px) {
+        .settings-btn {
+          top: 15px;
+          right: 15px;
+          padding: 6px 12px;
+          font-size: 12px;
+        }
+      }
+
+      /* 添加遮罩层样式 */
+      .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <button onclick="toggleProbabilityPanel()" class="settings-btn">
+        <span>设置</span>
+      </button>
+      <h1>随机摇号器</h1>
+      <div class="input-group">
+        <label>范围：从</label>
+        <input type="number" id="minNum" value="1" />
+        <label>到</label>
+        <input type="number" id="maxNum" value="100" />
+      </div>
+      <div class="input-group">
+        <label>抽取数量：</label>
+        <input type="number" id="count" value="1" min="1" />
+      </div>
+      <div class="button-group">
+        <button onclick="startRoll()">开始摇号</button>
+      </div>
+      <div id="result">?</div>
+    </div>
+
+    <!-- 添加遮罩层 -->
+    <div id="overlay" class="overlay" style="display: none"></div>
+
+    <!-- 添加概率设置面板 -->
+    <div id="probabilityPanel" class="probability-panel" style="display: none">
+      <h3>概率设置</h3>
+      <div class="probability-content">
+        <div class="probability-row">
+          <label>数字范围：</label>
+          <span id="numberRange"></span>
+        </div>
+        <div class="probability-row">
+          <button onclick="selectAll(true)">全选</button>
+          <button onclick="selectAll(false)">全不选</button>
+        </div>
+        <div id="probabilityInputs" class="probability-inputs"></div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
